@@ -84,6 +84,12 @@
                 $(function total() {
                     $('.total em').html(({{ goods.price }} * $('#num_show').val()).toFixed(2) + '元')
                 });
+                function setorder(goods_id) {
+                    var goods_num = $('#num_show').val()
+                    $.get('/web/dispose_order',{goods_id: goods_id, goods_num: goods_num},function (msg) {
+                        location.href='/web/order?order_number=' + msg.order_number
+                    })
+                }
             </script>
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
@@ -96,7 +102,7 @@
 			</div>
 			<div class="total">总价：<em>元</em></div>
 			<div class="operate_btn">
-				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a onclick="setorder({{ goods.id }})" class="buy_btn">立即购买</a>
 				<a onclick="upshopping({{ goods.id }})" class="add_cart" id="add_cart">加入购物车</a>
 			</div>
 		</div>

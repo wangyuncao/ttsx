@@ -473,19 +473,33 @@ def check_all(request):
 def dispose_order(request):
     if request.method == 'GET':
         user = request.user
-        shoppings = Shopping.objects.filter(user=user, is_select=True)
-        order_number = random_order() + datetime.now().strftime("%Y%m%d%H%S%M")
-        Order.objects.create(order_number=order_number, user=user)
-        order = Order.objects.get(order_number=order_number)
-        for shopping in shoppings:
-            Order_Goods.objects.create(goods=shopping.goods,
+        goods_id = request.GET.get('goods_id', False)
+        goods_num = request.GET.get('goods_num', False)
+        if goods_id:
+            order_number = random_order() + datetime.now().strftime("%Y%m%d%H%S%M")
+            Order.objects.create(order_number=order_number, user=user)
+            order = Order.objects.get(order_number=order_number)
+            Order_Goods.objects.create(goods_id=goods_id,
                                        order=order,
-                                       goods_num=shopping.goods_num)
-        shoppings.delete()
+                                       goods_num=goods_num)
 
-        return JsonResponse({'code': 200,
-                             'msg': '请求成功',
-                             'order_number': order_number})
+            return JsonResponse({'code': 200,
+                                 'msg': '请求成功',
+                                 'order_number': order_number})
+        else:
+            shoppings = Shopping.objects.filter(user=user, is_select=True)
+            order_number = random_order() + datetime.now().strftime("%Y%m%d%H%S%M")
+            Order.objects.create(order_number=order_number, user=user)
+            order = Order.objects.get(order_number=order_number)
+            for shopping in shoppings:
+                Order_Goods.objects.create(goods=shopping.goods,
+                                           order=order,
+                                           goods_num=shopping.goods_num)
+            shoppings.delete()
+
+            return JsonResponse({'code': 200,
+                                 'msg': '请求成功',
+                                 'order_number': order_number})
 
 
 def order(request):
