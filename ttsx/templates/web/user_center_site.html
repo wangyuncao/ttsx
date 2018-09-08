@@ -1,0 +1,176 @@
+{% extends 'base2.html' %}
+
+{% block title %}
+天天生鲜-用户中心
+{% endblock %}
+
+{% block css %}
+    <style>
+        .site_con > dl > dt{
+            display:inline;
+        }
+        .site_con > dl > input{
+            display:inline;
+        }
+        .site_con > dl > dd{
+            display:inline;
+        }
+    </style>
+{% endblock %}
+
+{% block page_name %}
+    用户中心
+{% endblock %}
+
+{% block content %}
+	<div class="main_con clearfix">
+		<div class="left_menu_con clearfix">
+			<h3>用户中心</h3>
+			<ul>
+				<li><a href="{% url 'web:user_center_info' %}">· 个人信息</a></li>
+				<li><a href="{% url 'web:user_center_order' %}">· 全部订单</a></li>
+				<li><a href="{% url 'web:user_center_site' %}" class="active">· 收货地址</a></li>
+			</ul>
+		</div>
+		<div class="right_content clearfix">
+        <form method="post">
+        {% csrf_token %}
+				<h3 class="common_title2">收货地址</h3>
+				<div class="site_con" id="site_show">
+				</div>
+				<h3 class="common_title2" id="site_state">添加地址</h3>
+				<div class="site_con">
+						<div class="form_group">
+							<label>收件人：</label>
+							<input type="text" name="addressee" id="addressee"><span id="addressee_hint" style="color: red;display: none;">&nbsp;&nbsp;&nbsp;请填写收件人</span>
+						</div>
+						<div class="form_group form_group2">
+							<label>详细地址：</label>
+							<textarea class="site_area" name="site" id="site"></textarea><span id="site_hint" style="color: red;display: none;">&nbsp;&nbsp;&nbsp;请填写详细地址</span>
+						</div>
+						<div class="form_group">
+							<label>邮编：</label>
+							<input type="text" name="postcode" id="postcode"><span id="postcode_hint" style="color: red;display: none;">&nbsp;&nbsp;&nbsp;请填写邮编</span>
+						</div>
+						<div class="form_group">
+							<label>手机：</label>
+							<input type="text" name="mobile" id="mobile"><span id="mobile_hint" style="color: red;display: none;">&nbsp;&nbsp;&nbsp;请填写手机</span>
+						</div>
+						<input type="button" onclick="upsite()" value="提交" class="info_submit">
+				</div>
+        </form>
+        <script>
+            function show_site() {
+                $.get('/web/show_site', function (msg) {
+                    if (msg.code == 200) {
+                        var s = ''
+                        var usersites = msg.data.usersites
+                        for (var i = 0; i < usersites.length; i += 1) {
+                            s += '<dl>'
+                            if (usersites[i].default_site) {
+                                s += '<dt>默认地址：</dt>'
+                            } else {
+                                s += '<dt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</dt>'
+                            }
+                            s += '<input onclick="compile(' + usersites[i].id + ')" type="radio" name="usersite_id" value="' + usersites[i].id + '">'
+                            s += '<dd>' + usersites[i].site + '（' + usersites[i].addressee + '收）' + usersites[i].secrecy + '</dd>'
+                            s += '<input type="button" onclick="del_site(' + usersites[i].id + ')" value="删除地址">'
+                            s += '</dl>'
+                        }
+                        $('#site_show').html(s)
+                    }
+                })
+            }
+            show_site()
+            function compile(usersite_id) {
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+                $.ajax({
+                    url:'/web/check_address/',
+                    dataType:'json',
+                    type:'POST',
+                    data:{
+                        'usersite_id': usersite_id,
+                    },
+                    headers:{'X-CSRFToken': csrf},
+                    success:function (msg) {
+                        if (msg.code == 200) {
+                            $('#addressee').val(msg.data.addressee)
+                            $('#site').val(msg.data.site)
+                            $('#postcode').val(msg.data.postcode)
+                            $('#mobile').val(msg.data.mobile)
+                            $('#site_state').text('编辑地址')
+                        }
+                    }
+                })
+            }
+            function upsite() {
+                var addressee = $('#addressee').val()
+                var site = $('#site').val()
+                var postcode = $('#postcode').val()
+                var mobile = $('#mobile').val()
+                var flag = true
+                if (addressee == ''){
+                    flag = false
+                    $('#addressee_hint').css('display', '')
+                }
+                if (site == ''){
+                    flag = false
+                    $('#site_hint').css('display', '')
+                }
+                if (postcode == ''){
+                    flag = false
+                    $('#postcode_hint').css('display', '')
+                }
+                if (mobile == ''){
+                    flag = false
+                    $('#mobile_hint').css('display', '')
+                }
+                if (flag){
+                    var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+                    var usersite_id = $('input[name="usersite_id"]:checked').val()
+                    $.ajax({
+                        url:'/web/user_center_site/',
+                        dataType:'json',
+                        type:'POST',
+                        data:{
+                            'usersite_id': usersite_id,
+                            'addressee': addressee,
+                            'site': site,
+                            'postcode': postcode,
+                            'mobile': mobile,
+                        },
+                        headers:{'X-CSRFToken': csrf},
+                        success:function (msg) {
+                            if (msg.code == 200) {
+                                $('#addressee').val('')
+                                $('#site').val('')
+                                $('#postcode').val('')
+                                $('#mobile').val('')
+                                $('#site_state').text('添加地址')
+                                show_site()
+                            }
+                        }
+                    })
+                }
+            }
+            function del_site(usersite_id) {
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+                $.ajax({
+                    url:'/web/del_site/',
+                    dataType:'json',
+                    type:'POST',
+                    data:{
+                        'usersite_id': usersite_id,
+                    },
+                    headers:{'X-CSRFToken': csrf},
+                    success:function (msg) {
+                        if (msg.code == 200){
+                            show_site()
+                        }
+                    }
+                })
+            }
+        </script>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    商品列表
+{% endblock %}
+
+{% block content %}
+    {% load static %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">商品列表示例</h2>
+       <a href="{% url 'backweb:addgoods' %}" class="fr top_rt_btn add_icon">添加商品</a>
+      </div>
+
+      <table class="table">
+      {% csrf_token %}
+       <tr>
+       <th>编号</th>
+       <th>缩略图</th>
+       <th>产品名称</th>
+       <th>单价</th>
+       <th>单位</th>
+       <th>分类名称</th>
+       <th>子分类名称</th>
+       <th>是否推荐</th>
+       <th>是否新品</th>
+       <th>销量</th>
+       <th>操作</th>
+       </tr>
+      <script>
+          function is_recommend(goods_id) {
+              var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+              $.ajax({
+                  url:'/backweb/goods_recommend/',
+                  dataType:'json',
+                  type:'POST',
+                  data:{
+                      'goods_id': goods_id,
+                  },
+                  headers:{'X-CSRFToken': csrf},
+                  success:function (msg) {
+                      if(msg.code==200){
+                          if(msg.judge){
+                              s = '<a onclick="is_recommend(' + goods_id + ')" class="link_icon" title="是">&#89;'
+                          }else{
+                              s = '<a onclick="is_recommend(' + goods_id + ')" class="link_icon" title="否">&#88;'
+                          }
+                          $('#recommend_' + goods_id).html(s)
+                      }
+                  }
+              })
+          }
+          function is_new(goods_id) {
+              var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+              $.ajax({
+                  url:'/backweb/goods_new/',
+                  dataType:'json',
+                  type:'POST',
+                  data:{
+                      'goods_id': goods_id,
+                  },
+                  headers:{'X-CSRFToken': csrf},
+                  success:function (msg) {
+                      if(msg.code==200){
+                          if(msg.judge){
+                              s = '<a onclick="is_new(' + goods_id + ')" class="link_icon" title="是">&#89;'
+                          }else{
+                              s = '<a onclick="is_new(' + goods_id + ')" class="link_icon" title="否">&#88;'
+                          }
+                          $('#new_' + goods_id).html(s)
+                      }
+                  }
+              })
+          }
+          function delgoods(goods_id) {
+              var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+              $.ajax({
+                  url:'/backweb/goods_del/',
+                  dataType:'json',
+                  type:'POST',
+                  data:{
+                      'goods_id': goods_id,
+                  },
+                  headers:{'X-CSRFToken': csrf},
+                  success:function (msg) {
+                      if(msg.code==200){
+                          $('#goods_' + goods_id).remove()
+                      }
+                  }
+              })
+          }
+      </script>
+       {% for goods in goods_page %}
+       <tr id="goods_{{ goods.id }}">
+       <td class="center">{{ goods.id }}</td>
+       <td class="center"><img src="/media/{{ goods.goodsimg }}" width="50" height="50"/></td>
+       <td>{{ goods.goodsname }}</td>
+       <td class="center"><strong class="rmb_icon">{{ goods.price }}</strong></td>
+       <td class="center">{{ goods.norms }}</td>
+       <td class="center">{{ goods.classify }}</td>
+       <td class="center">{{ goods.subclass }}</td>
+       <td class="center" id="recommend_{{ goods.id }}"><a onclick="is_recommend({{ goods.id }})" class="link_icon"
+       {% if goods.is_recommend %}
+       title="是">&#89;
+       {% else %}
+       title="否">&#88;
+       {% endif %}
+       </a></td>
+       <td class="center" id="new_{{ goods.id }}"><a onclick="is_new({{ goods.id }})" class="link_icon"
+       {% if goods.is_new %}
+       title="是">&#89;
+       {% else %}
+       title="否">&#88;
+       {% endif %}
+       </a></td>
+       <td class="center">{{ goods.popularity }}</td>
+       <td class="center">
+       <a href="{% url 'backweb:addgoods' %}?goods_id={{ goods.id }}" title="编辑" class="link_icon">&#101;</a>
+       <a onclick="delgoods({{ goods.id }})" title="删除" class="link_icon">&#100;</a>
+       </td>
+       </tr>
+       {% endfor %}
+      </table>
+      <aside class="paging">
+      {% if goods_page.has_previous %}
+      <a href="{% url 'backweb:goods' %}?page={{ goods_page.previous_page_number }}">上一页</a>
+      {% endif %}
+
+      <a href="{% url 'backweb:goods' %}">第一页</a>
+
+      {% for i in goods_page.paginator.page_range %}
+      <a href="{% url 'backweb:goods' %}?page={{ i }}">{{ i }}</a>
+      {% endfor %}
+
+      <a href="{% url 'backweb:goods' %}?page={{ goods_page.paginator.num_pages }}">最后一页</a>
+
+      {% if goods_page.has_next %}
+      <a href="{% url 'backweb:goods' %}?page={{ goods_page.next_page_number }}">下一页</a>
+      {% endif %}
+      </aside>
+ </div>
+</section>
+{% endblock %}

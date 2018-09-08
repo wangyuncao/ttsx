@@ -1,0 +1,44 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    添加静态图
+{% endblock %}
+
+{% block content %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">添加静态图</h2>
+      </div>
+     <form method="post" enctype="multipart/form-data">
+         {% csrf_token %}
+         {{ error }}
+      <ul class="ulColumn2">
+       <li>
+        <span class="item_name" style="width:120px;">分类：</span>
+        <select class="select" name="classi_id" id="subclass">
+            {% for class in classs %}
+            <option value="{{ class.id }}">{{ class.typename }}</option>
+            {% endfor %}
+        </select>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">上传图片：</span>
+        <label class="uploadImg">
+         <input type="file" name="img"/>
+         <span>上传图片</span>
+        </label>
+       </li>
+      <li>
+        <span class="item_name" style="width:120px;">轮播顺序：</span>
+        <input name="order" type="text" class="textbox textbox_225" placeholder="轮播顺序..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;"></span>
+        <input type="submit" class="link_btn" value="提交"/>
+       </li>
+      </ul>
+     </form>
+ </div>
+</section>
+{% endblock %}

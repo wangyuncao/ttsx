@@ -1,0 +1,69 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    用户列表
+{% endblock %}
+
+{% block content %}
+    {% load static %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">用户列表示例</h2>
+      </div>
+      <script>
+          function is_root(user_id) {
+              $.get('/backweb/is_root', {user_id: user_id}, function (msg) {
+                  if(msg.code == 200){
+                      if (msg.is_root){
+                          $('#user_' + msg.user_id).html('<a title="是" class="link_icon" onclick="is_root(' + msg.user_id + ')">&#89;</a>')
+                      }else{
+                          $('#user_' + msg.user_id).html('<a title="否" class="link_icon" onclick="is_root(' + msg.user_id + ')">&#88;</a>')
+                      }
+                  }
+              })
+          }
+      </script>
+      <table class="table">
+       <tr>
+        <th>用户名</th>
+        <th>邮箱</th>
+        <th>是否管理员</th>
+       </tr>
+
+       {% for user in users %}
+       <tr>
+        <td class="center">{{ user.username }}</td>
+        <td class="center">{{ user.email }}</td>
+        <td class="center" id="user_{{ user.id }}">
+            {% if user.is_root %}
+                <a title="是" class="link_icon" onclick="is_root({{ user.id }})">&#89;</a>
+            {% else %}
+                <a title="否" class="link_icon" onclick="is_root({{ user.id }})">&#88;</a>
+            {% endif %}
+        </td>
+       </tr>
+       {% endfor %}
+
+      </table>
+      <aside class="paging">
+      {% if users.has_previous %}
+      <a href="{% url 'backweb:user_show' %}?page={{ users.previous_page_number }}">上一页</a>
+      {% endif %}
+
+      <a href="{% url 'backweb:user_show' %}">第一页</a>
+
+      {% for i in users.paginator.page_range %}
+      <a href="{% url 'backweb:user_show' %}?page={{ i }}">{{ i }}</a>
+      {% endfor %}
+
+      <a href="{% url 'backweb:user_show' %}?page={{ users.paginator.num_pages }}">最后一页</a>
+
+      {% if users.has_next %}
+      <a href="{% url 'backweb:user_show' %}?page={{ users.next_page_number }}">下一页</a>
+      {% endif %}
+
+      </aside>
+ </div>
+</section>
+{% endblock %}

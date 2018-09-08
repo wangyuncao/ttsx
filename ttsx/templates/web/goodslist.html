@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}
+    天天生鲜-商品列表
+{% endblock %}
+
+{% block content %}
+    <div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+                    {% for classi in classis %}
+					<li><a href="{% url 'web:goodslist' 1 classi.id 0 0 0 %}" class="{{ classi.type }}">{{ classi.typename }}</a></li>
+                    {% endfor %}
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href="{% url 'web:index' %}">首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+    {% csrf_token %}
+		<a href="{% url 'web:goodslist' 1 0 0 0 0 %}">全部分类</a>
+        {% if class_f != '0' %}
+		<span>></span>
+		<a href="{% url 'web:goodslist' 1 class_f 0 0 0 %}">{{ goodall.0.classify }}</a>
+        {% endif %}
+        {% if subclass != '0' %}
+            <span>></span>
+		    <a href="{% url 'web:goodslist' 1 class_f subclass 0 0 %}">{{ subclass }}</a>
+        {% endif %}
+	</div>
+
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+				<ul>
+                    {% for good in goodslook %}
+                        {% if good.is_new %}
+					<li>
+						<a href="{% url 'web:goods' %}?goods_id={{ good.id }}"><img src="/media/{{ good.goodsimg }}"></a>
+						<h4><a href="{% url 'web:goods' %}?goods_id={{ good.id }}">{{ good.goodsname }}</a></h4>
+						<div class="prize">￥{{ good.price }}</div>
+					</li>
+                        {% endif %}
+                    {% endfor %}
+				</ul>
+			</div>
+		</div>
+
+		<div class="r_wrap fr clearfix">
+			<div class="sort_bar">
+				<a href="#" class="active">默认</a>
+				<a href="{% url 'web:goodslist' 1 class_f subclass alt_price_state 0 %}">
+                    价格
+                    {% if price_state == '1' %}
+                        ↓
+                    {% elif price_state == '2' %}
+                        ↑
+                    {% endif %}
+                </a>
+				<a href="{% url 'web:goodslist' 1 class_f subclass 0 alt_popularity_state %}">
+                    人气
+                    {% if popularity_state == '1' %}
+                        ↓
+                    {% elif popularity_state == '2' %}
+                        ↑
+                    {% endif %}
+                </a>
+			</div>
+
+			<ul class="goods_type_list clearfix">
+                {% for good in goods %}
+				<li>
+					<a href="{% url 'web:goods' %}?goods_id={{ good.id }}"><img src="/media/{{ good.goodsimg }}"></a>
+					<h4><a href="{% url 'web:goods' %}?goods_id={{ good.id }}">{{ good.goodsname }}</a></h4>
+					<div class="operate">
+						<span class="prize">￥{{ good.price }}</span>
+						<span class="unit">{{ good.price }}/{{ good.norms }}</span>
+						<a onclick="upshopping({{ good.id }})" class="add_goods" title="加入购物车"></a>
+					</div>
+				</li>
+                {% endfor %}
+			</ul>
+        <script>
+            function upshopping(goods_id) {
+                var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+                $.ajax({
+                    url:'/web/upshopping/',
+                    type:'POST',
+                    dataType:'json',
+                    data:{
+                        'goods_id': goods_id,
+                        'goods_num': 1,
+                    },
+                    headers:{'X-CSRFToken': csrf},
+                    success: function (msg) {
+                        $('#show_count').html(msg.count)
+                    },
+                })
+            }
+        </script>
+
+			<div class="pagenation">
+                {% if goods.has_previous %}
+				<a href="{% url 'web:goodslist' goods.previous_page_number class_f subclass price_state popularity_state %}">上一页</a>
+                {% endif %}
+
+                <a href="{% url 'web:goodslist' 1 class_f subclass price_state popularity_state %}">第一页</a>
+
+                {% for i in goods.paginator.page_range %}
+				<a href="{% url 'web:goodslist' i class_f subclass price_state popularity_state %}"
+                   {% if goods.number == i %}
+                   class="active"
+                   {% endif %}
+                >{{ i }}</a>
+                {% endfor %}
+
+                <a href="{% url 'web:goodslist' goods.paginator.num_pages class_f subclass price_state popularity_state %}">最后一页</a>
+
+                {% if goods.has_next %}
+				<a href="{% url 'web:goodslist' goods.next_page_number class_f subclass price_state popularity_state %}">下一页></a>
+                {% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

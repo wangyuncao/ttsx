@@ -1,0 +1,117 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    添加商品
+{% endblock %}
+
+{% block content %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">添加商品</h2>
+      </div>
+     <form method="post" enctype="multipart/form-data">
+         {% csrf_token %}
+         {{ error }}
+      <ul class="ulColumn2">
+      <input value="{{ goods.id }}" name="id" type="text" hidden/>
+       <li>
+        <span class="item_name" style="width:120px;">商品名字：</span>
+        <input value="{{ goods.goodsname }}" name="goodsname" type="text" class="textbox textbox_225" placeholder="商品名字..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">上传图片：</span>
+        <label class="uploadImg">
+         <input type="file" name="goodsimg"/>
+         <span>上传图片</span>
+        </label>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">价格：</span>
+        <input value="{{ goods.price }}" name="price" type="text" class="textbox textbox_225" placeholder="价格..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">规格：</span>
+        <input value="{{ goods.norms }}" name="norms" type="text" class="textbox textbox_225" placeholder="规格..."/>
+       </li>
+          <script>
+              (function () {
+                  $.get('/backweb/upclassification', function (msg) {
+                      s = ''
+                      for(var i = 0;i < msg.data.classiname.length; i += 1){
+                          class_name = msg.data.classiname[i]
+                          s += '<option value="' + class_name + '"'
+                          if ('{{ goods.classify }}'==class_name){
+                              s += 'selected'
+                          }
+                          s += '>' + class_name + '</option>'
+                      }
+                      $('#classify').html(s)
+                      childtypenames()
+                  })
+              })();
+              function childtypenames() {
+                  var classi_name = document.getElementById("classify").value;
+                  var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+                  $.ajax({
+                      url:'/backweb/upclassification/',
+                      dataType:'json',
+                      type:'POST',
+                      data:{
+                          'classi_name':classi_name,
+                      },
+                      headers:{'X-CSRFToken': csrf},
+                      success:function (msg) {
+                          s = ''
+                          for(var i = 0;i < msg.data.child.length; i += 1) {
+                              child_name = msg.data.child[i]
+                              s += '<option value="' + child_name + '"'
+                              if ('{{ goods.subclass }}'==child_name){
+                              s += 'selected'
+                              }
+                              s += '>' + child_name + '</option>'
+                          }
+                          $('#subclass').html(s)
+                      }
+                  })
+              }
+          </script>
+       <li>
+        <span class="item_name" style="width:120px;">分类：</span>
+        <select class="select" name="classify" id="classify" onchange="childtypenames()">
+        </select>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">子分类：</span>
+        <select class="select" name="subclass" id="subclass">
+        </select>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">简要说明：</span>
+        <input value="{{ goods.abstract }}" name="abstract" type="text" class="textbox textbox_295" placeholder="简要说明..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">商品详情：</span>
+        <textarea name="commodity" placeholder="商品详情..." class="textarea" style="width:500px;height:100px;">{{ goods.commodity }}</textarea>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">推荐：</span>
+        <label class="single_selection"><input type="checkbox" name="is_recommend"
+        {% if goods.is_recommend %}
+            checked
+        {% endif %}
+        />是否推荐&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="is_new"
+        {% if goods.is_new %}
+            checked
+        {% endif %}
+        />是否新品</label>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;"></span>
+        <input type="submit" class="link_btn" value="提交"/>
+       </li>
+      </ul>
+     </form>
+ </div>
+</section>
+{% endblock %}

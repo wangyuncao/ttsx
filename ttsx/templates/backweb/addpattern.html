@@ -1,0 +1,33 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    添加支付方式
+{% endblock %}
+
+{% block content %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">添加支付方式</h2>
+      </div>
+     <form method="post" enctype="multipart/form-data">
+         {% csrf_token %}
+         {{ error }}
+      <ul class="ulColumn2">
+       <li>
+        <span class="item_name" style="width:120px;">支付方式名：</span>
+        <input name="pattname" type="text" class="textbox textbox_225" placeholder="支付方式名..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">支付描述：</span>
+        <textarea name="describe" placeholder="支付描述..." class="textarea" style="width:500px;height:100px;"></textarea>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;"></span>
+        <input type="submit" class="link_btn" value="提交"/>
+       </li>
+      </ul>
+     </form>
+ </div>
+</section>
+{% endblock %}

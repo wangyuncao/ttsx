@@ -1,0 +1,221 @@
+{% extends 'base2.html' %}
+
+{% block title %}
+天天生鲜-购物车
+{% endblock %}
+
+{% block page_name %}
+    购物车
+{% endblock %}
+
+{% block content %}
+	<div class="total_count">全部商品<em>{{ shoppings.count }}{{ shopping_count }}</em>件</div>
+	<ul class="cart_list_th clearfix">
+		<li class="col01">商品名称</li>
+		<li class="col02">商品单位</li>
+		<li class="col03">商品价格</li>
+		<li class="col04">数量</li>
+		<li class="col05">小计</li>
+		<li class="col06">操作</li>
+	</ul>
+    <script>
+        function addshopping(shopping_id) {
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            $.ajax({
+                url:'/web/addshopping/',
+                dataType:'json',
+                type:'POST',
+                data:{
+                    'shopping_id': shopping_id,
+                },
+                headers:{'X-CSRFToken': csrf},
+                success:function (msg) {
+                    $('#goods_num_' + shopping_id).val(msg.goods_num)
+                    subtotal()
+                    total()
+                }
+            })
+        }
+        function cutshopping(shopping_id) {
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            $.ajax({
+                url:'/web/cutshopping/',
+                dataType:'json',
+                type:'POST',
+                data:{
+                    'shopping_id': shopping_id,
+                },
+                headers:{'X-CSRFToken': csrf},
+                success:function (msg) {
+                    if(msg.code == 200){
+                        $('#goods_num_' + shopping_id).val(msg.goods_num)
+                        subtotal()
+                    }else {
+                        $('#shopping_' + shopping_id).remove()
+                        $('.total_count em').html($('.total_count em').html() - 1)
+                    }
+                    total()
+                }
+            })
+        }
+        function delshopping(shopping_id) {
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            $.ajax({
+                url:'/web/delshopping/',
+                dataType:'json',
+                type:'POST',
+                data:{
+                    'shopping_id': shopping_id,
+                },
+                headers:{'X-CSRFToken': csrf},
+                success:function (msg) {
+                    $('#shopping_' + shopping_id).remove()
+                    $('.total_count em').html($('.total_count em').html() - 1)
+                    total()
+                }
+            })
+        }
+        function check(shopping_id) {
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            $.ajax({
+                url:'/web/check/',
+                dataType:'json',
+                type:'POST',
+                data:{
+                    'shopping_id': shopping_id,
+                },
+                headers:{'X-CSRFToken': csrf},
+                success:function (msg) {
+                    if (msg.state == '0'){
+                        $('.settlements .col01').html('<input type="checkbox" onclick="check_all(0)">')
+                    } else {
+                        $('.settlements .col01').html('<input type="checkbox" onclick="check_all(1)" checked>')
+                    }
+                    total()
+                }
+            })
+        }
+        function subtotal() {
+            var num = $('#num_show').val()
+            {% for shopping in shoppings %}
+            $('#subtotal_{{ shopping.id }}').html(({{ shopping.goods.price }} * $('#goods_num_{{ shopping.id }}').val()).toFixed(2) + '元')
+            {% endfor %}
+            {% for good in goods %}
+            $('#subtotal_{{ good.id }}').html(({{ good.price }} * $('#goods_num_{{ good.id }}').val()).toFixed(2) + '元')
+            {% endfor %}
+        }
+        function total() {
+            $.get('/web/total', function (msg) {
+                $('.settlements .col03 em').html(msg.data.total)
+                $('.settlements .col03 b').html(msg.data.counts)
+            })
+        }
+        $(function total() {
+            $.get('/web/total', function (msg) {
+                $('.settlements .col03 em').html(msg.data.total)
+                $('.settlements .col03 b').html(msg.data.counts)
+                subtotal()
+            })
+        })
+        function check_all(state) {
+            var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            $.ajax({
+                url:'/web/check_all/',
+                dataType:'json',
+                type:'POST',
+                data:{
+                    'state': state,
+                },
+                headers:{'X-CSRFToken': csrf},
+                success:function (msg) {
+                    if (state == 1){
+                        {% for shopping in shoppings %}
+                            $('#shopping_{{ shopping.id }} .col01').html('<input id="check_{{ shopping.id }}" type="checkbox" onclick="check({{ shopping.id }})">')
+                        {% endfor %}
+                        {% for good in goods %}
+                            $('#shopping_{{ good.id }} .col01').html('<input id="check_{{ good.id }}" type="checkbox" onclick="check({{ good.id }})">')
+                        {% endfor %}
+                        $('.settlements .col01').html('<input type="checkbox" onclick="check_all(0)">')
+                    }else {
+                        {% for shopping in shoppings %}
+                            $('#shopping_{{ shopping.id }} .col01').html('<input id="check_{{ shopping.id }}" type="checkbox" onclick="check({{ shopping.id }})" checked>')
+                        {% endfor %}
+                        {% for good in goods %}
+                            $('#shopping_{{ good.id }} .col01').html('<input id="check_{{ good.id }}" type="checkbox" onclick="check({{ good.id }})" checked>')
+                        {% endfor %}
+                        $('.settlements .col01').html('<input type="checkbox" onclick="check_all(1)" checked>')
+                    }
+                    total()
+                }
+            })
+        }
+        function account() {
+            $.get('/web/dispose_order', function (msg) {
+                location.href='/web/order?order_number=' + msg.order_number
+            })
+        }
+    </script>
+    {% csrf_token %}
+ {% if shoppings %}
+    {% for shopping in shoppings %}
+	<ul id="shopping_{{ shopping.id }}" class="cart_list_td clearfix">
+		<li class="col01"><input id="check_{{ shopping.id }}" type="checkbox"
+                                 {% if shopping.is_select %}
+                                 checked
+                                 {% endif %}
+         onclick="check({{ shopping.id }})"></li>
+		<li class="col02"><img src="/media/{{ shopping.goods.goodsimg }}"></li>
+		<li class="col03">{{ shopping.goods.goodsname }}<br><em>{{ shopping.goods.price }}元/{{ shopping.goods.norms }}</em></li>
+		<li class="col04">{{ shopping.goods.norms }}</li>
+		<li class="col05">{{ shopping.goods.price }}元</li>
+		<li class="col06">
+			<div class="num_add">
+				<a onclick="addshopping({{ shopping.id }})" href="javascript:;" class="add fl">+</a>
+				<input id="goods_num_{{ shopping.id }}" type="text" class="num_show fl" value="{{ shopping.goods_num }}">
+				<a onclick="cutshopping({{ shopping.id }})" href="javascript:;" class="minus fl">-</a>
+			</div>
+		</li>
+		<li class="col07" id="subtotal_{{ shopping.id }}"></li>
+		<li class="col08"><a onclick="delshopping({{ shopping.id }})">删除</a></li>
+	</ul>
+    {% endfor %}
+{% endif %}
+
+{% if goods %}
+    {% for good in goods %}
+        <ul id="shopping_{{ good.id }}" class="cart_list_td clearfix">
+		<li class="col01"><input id="check_{{ good.id }}" type="checkbox"
+                                 {% if good.state == 1 %}
+                                 checked
+                                 {% endif %}
+         onclick="check({{ good.id }})"></li>
+		<li class="col02"><img src="/media/{{ good.goodsimg }}"></li>
+		<li class="col03">{{ good.goodsname }}<br><em>{{ good.price }}元/{{ good.norms }}</em></li>
+		<li class="col04">{{ good.norms }}</li>
+		<li class="col05">{{ good.price }}元</li>
+		<li class="col06">
+			<div class="num_add">
+				<a onclick="addshopping({{ good.id }})" href="javascript:;" class="add fl">+</a>
+				<input id="goods_num_{{ good.id }}" type="text" class="num_show fl" value="{{ good.num }}">
+				<a onclick="cutshopping({{ good.id }})" href="javascript:;" class="minus fl">-</a>
+			</div>
+		</li>
+		<li class="col07" id="subtotal_{{ good.id }}"></li>
+		<li class="col08"><a onclick="delshopping({{ good.id }})">删除</a></li>
+	</ul>
+    {% endfor %}
+{% endif %}
+
+	<ul class="settlements">
+		<li class="col01"><input type="checkbox" onclick="check_all({{ state }})"
+                                 {% if state == 1 %}
+                                  checked
+                                 {% endif %}
+        >
+        </li>
+		<li class="col02">全选</li>
+		<li class="col03">合计(不含运费)：<span>¥</span><em></em><br>共计<b></b>件商品</li>
+		<li class="col04"><a onclick="account()">去结算</a></li>
+	</ul>
+
+{% endblock %}

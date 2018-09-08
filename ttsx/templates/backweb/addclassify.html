@@ -1,0 +1,41 @@
+{% extends 'base_back.html' %}
+
+{% block title %}
+    添加分类
+{% endblock %}
+
+{% block content %}
+<section class="rt_wrap content mCustomScrollbar">
+ <div class="rt_content">
+      <div class="page_title">
+       <h2 class="fl">添加分类</h2>
+      </div>
+     <form method="post" enctype="multipart/form-data">
+         {% csrf_token %}
+         {{ error }}
+      <ul class="ulColumn2">
+       <li>
+        <span class="item_name" style="width:120px;">上传图片：</span>
+        <label class="uploadImg">
+         <input type="file" name="classimg"/>
+         <span>上传图片</span>
+        </label>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">分类名称：</span>
+        <input name="typename" type="text" class="textbox textbox_225" placeholder="分类名称..."/>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;">子分类：</span>
+        <input name="childtypenames" type="text" class="textbox textbox_225" placeholder="子分类..."/>
+       <span class="errorTips">分类之间用#相隔</span>
+       </li>
+       <li>
+        <span class="item_name" style="width:120px;"></span>
+        <input type="submit" class="link_btn" value="提交"/>
+       </li>
+      </ul>
+      </form>
+ </div>
+</section>
+{% endblock %}
