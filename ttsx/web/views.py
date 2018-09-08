@@ -531,7 +531,7 @@ def user_center_info(request):
 def user_center_order(request):
     if request.method == 'GET':
         user = request.user
-        orders_all = Order.objects.filter(Q(user=user) & (Q(status=0) | Q(status=1)))
+        orders_all = Order.objects.filter(user=user)
 
         page_num = int(request.GET.get('page', 1))
         paginator = Paginator(orders_all, 2)

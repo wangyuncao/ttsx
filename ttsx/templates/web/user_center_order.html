@@ -43,6 +43,8 @@
                     未支付
                     {% elif order.status == 1 %}
                     已支付
+                    {% elif order.status == 2 %}
+                    已发货
                     {% endif %}
                 </li>
 			</ul>
@@ -65,13 +67,17 @@
                             {% if order.status == 0 %}
                             待付款
                             {% elif order.status == 1 %}
-                            已付款
+                            已付款,待发货
+                            {% elif order.status == 2 %}
+                            已付款,已发货
                             {% endif %}
                         </td>
                         {% if order.status == 0 %}
                         <td width="15%"><a href="{% url 'web:order' %}?order_number={{ order.order_number }}" class="oper_btn">去付款</a>
                         {% elif order.status == 1 %}
                         <td width="15%"><a href="#" class="oper_btn">查看物流</a></td>
+                        {% elif order.status == 2 %}
+                        <td width="15%"><a href="#" class="oper_btn">去评价</a></td>
                         {% endif %}
 					</tr>
 				</tbody>

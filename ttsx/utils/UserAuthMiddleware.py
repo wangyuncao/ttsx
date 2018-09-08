@@ -12,6 +12,7 @@ from datetime import datetime
 class AuthMiddleWare(MiddlewareMixin):
 
     def process_request(self, request):
+        request.session.clear_expired()
 
         check_path = ['/web/login/', '/web/register/', '/backweb/login/', '/media/']
 

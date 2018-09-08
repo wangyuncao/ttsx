@@ -1,7 +1,7 @@
 {% extends 'base_back.html' %}
 
 {% block title %}
-    订单列表
+    订单处理
 {% endblock %}
 
 {% block content %}
@@ -9,17 +9,19 @@
 <section class="rt_wrap content mCustomScrollbar">
  <div class="rt_content">
       <div class="page_title">
-       <h2 class="fl">订单列表示例</h2>
+       <h2 class="fl">订单处理示例</h2>
       </div>
       <script>
           function uporder(order_id){
               var csrf = $('input[name="csrfmiddlewaretoken"]').val()
+              var distribution_id = $('#select_distribution option:selected').val();
               $.ajax({
                   url:'/backweb/uporder/',
                   dataType:'json',
                   type:'POST',
                   data:{
                       'order_id': order_id,
+                      'distribution_id': distribution_id,
                   },
                   headers:{'X-CSRFToken': csrf},
                   success:function (msg) {
@@ -39,6 +41,7 @@
         <th>收件人地址</th>
         <th>支付方式</th>
         <th>创建时间</th>
+        <th>选择配送方式</th>
         <th>操作</th>
        </tr>
        {% for order in orders %}
@@ -51,8 +54,15 @@
         </td>
         <td class="center">{{ order.pattern.pattname }}</td>
         <td class="center">{{ order.creation_time|date:"Y-m-d H:i:s" }}</td>
+        <td class="center mode_distribution">
+            <select id="select_distribution">
+                {% for distribution in distributions %}
+                    <option value ="{{ distribution.id }}">{{ distribution.distname }}</option>
+                {% endfor %}
+            </select>
+        </td>
         <td class="center">
-         <a onclick="uporder({{ order.id }})" title="提交订单" class="link_icon" target="_blank">&#118;</a>
+         <a onclick="uporder({{ order.id }})" title="确认订单" class="link_icon" target="_blank">&#118;</a>
         </td>
        </tr>
        {% endfor %}

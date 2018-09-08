@@ -265,15 +265,19 @@ def order(request):
         # .page赋哪一页
         orders = paginator.page(page_num)
 
-        return render(request, 'backweb/order.html', {'orders': orders})
+        distributions = Distribution.objects.all()
+
+        return render(request, 'backweb/order.html', {'orders': orders, 'distributions': distributions})
 
 
 def uporder(request):
     if request.method == 'POST':
         order_id = request.POST.get('order_id')
+        distribution_id = request.POST.get('distribution_id')
 
         order = Order.objects.get(id=order_id)
         order.status = 2
+        order.distribution_id = distribution_id
         order.save()
         return JsonResponse({'code': 200, 'msg': '请求成功'})
 
